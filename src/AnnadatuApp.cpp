@@ -73,19 +73,19 @@ void ANNADATUApp::run() {
             std::cout << "\n+-------------------------------------------------------------+\n";
             std::cout << "|                      WELCOME TO ANNADATU                    |\n";
             std::cout << "+-------------------------------------------------------------+\n";
-            std::cout << " 1. Quick Demo Login (Preloaded verified test accounts)\n";
-            std::cout << " 2. Login with Email & Password\n";
-            std::cout << " 3. Register as a Donor   (Restaurant / Caterer / Hostel / Home)\n";
-            std::cout << " 4. Register as Acceptor (NGO / Shelter / Community Kitchen)\n";
-            std::cout << " 5. View Global Mission & Paradox of Plenty Statistics\n";
-            std::cout << " 6. View ANNADATU Community Heroes Leaderboard\n";
+            std::cout << " 1. Login as Donor    (Restaurants, Banquets, Hostels, Homes)\n";
+            std::cout << " 2. Login as Acceptor (NGOs, Shelters, Community Kitchens)\n";
+            std::cout << " 3. Register New Donor\n";
+            std::cout << " 4. Register New Acceptor\n";
+            std::cout << " 5. View Food Waste Problem & Impact Stats\n";
+            std::cout << " 6. View Donor Leaderboard\n";
             std::cout << " 7. Exit Program\n";
             std::cout << "+-------------------------------------------------------------+\n";
 
             int choice = UIHelper::getMenuChoice(1, 7);
             switch (choice) {
-                case 1: handleQuickDemoLogin(); break;
-                case 2: handleLogin(); break;
+                case 1: handleDonorLogin(); break;
+                case 2: handleAcceptorLogin(); break;
                 case 3: handleRegister(Role::DONOR); break;
                 case 4: handleRegister(Role::ACCEPTOR); break;
                 case 5: showGlobalImpactStats(); break;
@@ -111,43 +111,73 @@ void ANNADATUApp::run() {
     }
 }
 
-void ANNADATUApp::handleQuickDemoLogin() {
-    UIHelper::printSectionHeader("QUICK DEMO LOGIN SELECTOR");
-    std::cout << "Choose a preconfigured persona to explore the app:\n";
-    std::cout << " [1] Donor:    Bikanervala Grand Banquets (Caterer, Karol Bagh)\n";
-    std::cout << " [2] Donor:    Haldirams CP Flagship (Restaurant, CP)\n";
-    std::cout << " [3] Donor:    IIT Delhi Mess Committee (Hostel Mess, Hauz Khas)\n";
-    std::cout << " [4] Acceptor: Robin Hood Army Delhi (NGO, CP)\n";
-    std::cout << " [5] Acceptor: Aasra Community Night Shelter (Shelter Home, Old Delhi)\n";
-    std::cout << " [6] Acceptor: Nanhe Parinde Children Welfare (Orphanage, Lajpat Nagar)\n";
-    std::cout << " [7] Return to Main Menu\n";
+void ANNADATUApp::handleDonorLogin() {
+    UIHelper::printSectionHeader("DONOR LOGIN");
+    std::vector<std::shared_ptr<Donor>> donorList;
+    for (const auto& u : m_users) {
+        if (u && u->getRole() == Role::DONOR) {
+            donorList.push_back(std::dynamic_pointer_cast<Donor>(u));
+        }
+    }
 
-    int opt = UIHelper::getMenuChoice(1, 7);
-    if (opt == 1) m_currentUser = findUserById("USR_D101");
-    else if (opt == 2) m_currentUser = findUserById("USR_D102");
-    else if (opt == 3) m_currentUser = findUserById("USR_D103");
-    else if (opt == 4) m_currentUser = findUserById("USR_A201");
-    else if (opt == 5) m_currentUser = findUserById("USR_A202");
-    else if (opt == 6) m_currentUser = findUserById("USR_A203");
-    else return;
+    std::cout << "Choose an existing Donor profile or login with credentials:\n";
+    for (size_t i = 0; i < donorList.size(); ++i) {
+        std::cout << " [" << (i + 1) << "] " << donorList[i]->getName()
+                  << " (" << donorList[i]->getRoleSpecificType() << ")\n";
+    }
+    std::cout << " [" << (donorList.size() + 1) << "] Enter Email & Password\n";
+    std::cout << " [0] Return to Main Menu\n";
 
-    if (m_currentUser) {
-        UIHelper::printSuccess("Logged in successfully as " + m_currentUser->getName());
+    int opt = UIHelper::getMenuChoice(0, static_cast<int>(donorList.size() + 1));
+    if (opt == 0) return;
+    if (opt >= 1 && opt <= static_cast<int>(donorList.size())) {
+        m_currentUser = donorList[opt - 1];
+        UIHelper::printSuccess("Logged in as " + m_currentUser->getName());
         UIHelper::pause();
+    } else {
+        handleEmailLogin(Role::DONOR);
     }
 }
 
-void ANNADATUApp::handleLogin() {
-    UIHelper::printSectionHeader("ACCOUNT LOGIN");
+void ANNADATUApp::handleAcceptorLogin() {
+    UIHelper::printSectionHeader("ACCEPTOR / NGO LOGIN");
+    std::vector<std::shared_ptr<Acceptor>> accList;
+    for (const auto& u : m_users) {
+        if (u && u->getRole() == Role::ACCEPTOR) {
+            accList.push_back(std::dynamic_pointer_cast<Acceptor>(u));
+        }
+    }
+
+    std::cout << "Choose an existing Acceptor profile or login with credentials:\n";
+    for (size_t i = 0; i < accList.size(); ++i) {
+        std::cout << " [" << (i + 1) << "] " << accList[i]->getName()
+                  << " (" << accList[i]->getRoleSpecificType() << ")\n";
+    }
+    std::cout << " [" << (accList.size() + 1) << "] Enter Email & Password\n";
+    std::cout << " [0] Return to Main Menu\n";
+
+    int opt = UIHelper::getMenuChoice(0, static_cast<int>(accList.size() + 1));
+    if (opt == 0) return;
+    if (opt >= 1 && opt <= static_cast<int>(accList.size())) {
+        m_currentUser = accList[opt - 1];
+        UIHelper::printSuccess("Logged in as " + m_currentUser->getName());
+        UIHelper::pause();
+    } else {
+        handleEmailLogin(Role::ACCEPTOR);
+    }
+}
+
+void ANNADATUApp::handleEmailLogin(Role role) {
+    UIHelper::printSectionHeader(role == Role::DONOR ? "DONOR CREDENTIAL LOGIN" : "ACCEPTOR CREDENTIAL LOGIN");
     std::string email = UIHelper::readLine("Enter registered email: ");
     std::string password = UIHelper::readLine("Enter password: ");
 
     auto user = findUserByEmail(email);
-    if (user && user->verifyPassword(password)) {
+    if (user && user->verifyPassword(password) && user->getRole() == role) {
         m_currentUser = user;
         UIHelper::printSuccess("Welcome back, " + user->getName() + "!");
     } else {
-        UIHelper::printError("Invalid email or password. Please try again.");
+        UIHelper::printError("Invalid email, password, or account type.");
     }
     UIHelper::pause();
 }
@@ -265,22 +295,20 @@ void ANNADATUApp::showDonorPortal() {
     donor->showDashboard();
 
     std::cout << "\nDONOR PORTAL ACTIONS:\n";
-    std::cout << " 1. Post a New Surplus Food Listing (Raw/Cooked, Expiry Window, Pickup Point)\n";
-    std::cout << " 2. View My Active Food Listings & Freshness Meter\n";
-    std::cout << " 3. Review Incoming Acceptor Requests & Confirm Booking\n";
-    std::cout << " 4. View Handover OTP (Show to Acceptor at pickup)\n";
-    std::cout << " 5. View Full Donor Profile & Badges\n";
-    std::cout << " 6. View ANNADATU Community Leaderboard\n";
-    std::cout << " 7. Logout to Main Menu\n";
+    std::cout << " 1. Post a New Surplus Food Listing\n";
+    std::cout << " 2. View My Active Food Listings\n";
+    std::cout << " 3. Review & Approve Incoming Requests\n";
+    std::cout << " 4. View My Donor Profile & Badges\n";
+    std::cout << " 5. View Community Leaderboard\n";
+    std::cout << " 6. Logout to Main Menu\n";
 
-    int choice = UIHelper::getMenuChoice(1, 7);
+    int choice = UIHelper::getMenuChoice(1, 6);
     switch (choice) {
         case 1: donorPostFood(); break;
         case 2: donorViewMyListings(); break;
         case 3: donorReviewRequests(); break;
-        case 4: donorShowHandoverOTP(); break;
-        case 5: donor->displayProfile(); UIHelper::pause(); break;
-        case 6: {
+        case 4: donor->displayProfile(); UIHelper::pause(); break;
+        case 5: {
             std::vector<std::shared_ptr<Donor>> donors;
             for (const auto& u : m_users) {
                 if (u && u->getRole() == Role::DONOR) {
@@ -292,7 +320,7 @@ void ANNADATUApp::showDonorPortal() {
             UIHelper::pause();
             break;
         }
-        case 7: {
+        case 6: {
             m_currentUser = nullptr;
             UIHelper::printInfo("Logged out successfully.");
             UIHelper::pause();
@@ -319,26 +347,20 @@ void ANNADATUApp::donorPostFood() {
     double qtyKg = UIHelper::readDouble("Estimated Weight in Kg: ", 0.5);
     int servings = UIHelper::readInt("Approximate Number of Servings / Meals: ", 1);
     int expiryHours = UIHelper::readInt("Safe Consumption Window (Hours until expiry, e.g. 4): ", 1);
-    std::string handling = UIHelper::readLine("Storage & Handling Instructions (e.g., 'Insulated hot containers'): ");
+    std::string handling = UIHelper::readLine("Storage & Handling Instructions (e.g. 'Insulated containers', or press Enter): ");
     if (handling.empty()) handling = "Hygienic covered packaging";
 
-    std::string photoTag = UIHelper::readLine("Photo Reference / Verification Tag: ");
-    if (photoTag.empty()) photoTag = "food_listing_" + std::to_string(m_listings.size() + 1) + ".jpg";
-
-    FoodItem item(title, ft, dt, qtyKg, servings, handling, photoTag);
+    FoodItem item(title, ft, dt, qtyKg, servings, handling);
     std::string listId = generateListingId();
-    std::string otp = generateOTP();
 
     DonationListing listing(listId, m_currentUser->getId(), m_currentUser->getName(),
                             item, m_currentUser->getLocation(), expiryHours,
-                            getCurrentTime(), ListingStatus::AVAILABLE, "", "", otp);
+                            getCurrentTime(), ListingStatus::AVAILABLE, "", "", "");
 
     m_listings.push_back(listing);
     syncStorage();
 
     UIHelper::printSuccess("Food donation listing [" + listId + "] published successfully!");
-    std::cout << " [!] Assigned Security OTP for Handover: " << otp << "\n";
-    std::cout << "     (Share this code with the verified Acceptor upon physical food pickup)\n";
     UIHelper::pause();
 }
 
@@ -351,9 +373,8 @@ void ANNADATUApp::donorViewMyListings() {
             found = true;
             std::cout << "----------------------------------------------------------------------------------------\n";
             std::cout << l << "\n";
-            std::cout << "      Assigned OTP: " << l.getOtp() << "\n";
             if (!l.getAssignedAcceptorName().empty()) {
-                std::cout << "      Requested/Matched with: " << l.getAssignedAcceptorName() << "\n";
+                std::cout << "      Assigned to: " << l.getAssignedAcceptorName() << "\n";
             }
         }
     }
@@ -387,37 +408,12 @@ void ANNADATUApp::donorReviewRequests() {
                   << "    Requested by: " << pendingListings[i]->getAssignedAcceptorName() << "\n\n";
     }
 
-    std::cout << "Select a request to confirm and schedule pickup (or 0 to cancel): ";
+    std::cout << "Select a request to approve (or 0 to cancel): ";
     int sel = UIHelper::getMenuChoice(0, static_cast<int>(pendingListings.size()));
     if (sel > 0) {
         pendingListings[sel - 1]->confirmAcceptance();
         syncStorage();
-        UIHelper::printSuccess("Pickup request confirmed! Status updated to MATCHED.");
-        std::cout << "Please ensure food is prepared. Handover OTP: " << pendingListings[sel - 1]->getOtp() << "\n";
-    }
-    UIHelper::pause();
-}
-
-void ANNADATUApp::donorShowHandoverOTP() {
-    UIHelper::printSectionHeader("HANDOVER OTP VERIFICATION CODES");
-    std::cout << "Active matched donations awaiting pickup:\n";
-    bool anyMatched = false;
-
-    for (const auto& l : m_listings) {
-        if (l.getDonorId() == m_currentUser->getId() &&
-            (l.getStatus() == ListingStatus::MATCHED || l.getStatus() == ListingStatus::REQUESTED)) {
-            anyMatched = true;
-            std::cout << " + Listing ID:     " << l.getId() << "\n";
-            std::cout << "   Food:           " << l.getFoodItem().getTitle() << "\n";
-            std::cout << "   Acceptor:       " << l.getAssignedAcceptorName() << "\n";
-            std::cout << "   SECURE OTP:     >>>  " << l.getOtp() << "  <<<\n";
-            std::cout << "   (Show this code to the pickup person to verify the handover)\n";
-            std::cout << "--------------------------------------------------------\n";
-        }
-    }
-
-    if (!anyMatched) {
-        std::cout << "No donations are currently in MATCHED or REQUESTED status.\n";
+        UIHelper::printSuccess("Request approved! Status is now MATCHED (Ready for pickup).");
     }
     UIHelper::pause();
 }
@@ -432,11 +428,11 @@ void ANNADATUApp::showAcceptorPortal() {
     acceptor->showDashboard();
 
     std::cout << "\nACCEPTOR / NGO PORTAL ACTIONS:\n";
-    std::cout << " 1. Browse Nearby Surplus Food (Urgency & Hyperlocal Distance Matching)\n";
-    std::cout << " 2. Connect / Request Surplus Food Donation\n";
-    std::cout << " 3. Complete Pickup & Verify Handover using Donor's OTP\n";
-    std::cout << " 4. Raise / Post Urgent Food Need for Beneficiaries\n";
-    std::cout << " 5. View My Food Requests & Distributed Total\n";
+    std::cout << " 1. Browse Available Surplus Food Nearby\n";
+    std::cout << " 2. Claim / Request Food Donation\n";
+    std::cout << " 3. Confirm Food Collection / Delivery Received\n";
+    std::cout << " 4. Post Food Requirement for Beneficiaries\n";
+    std::cout << " 5. View My Food Requests\n";
     std::cout << " 6. View My Acceptor Profile\n";
     std::cout << " 7. Logout to Main Menu\n";
 
@@ -444,7 +440,7 @@ void ANNADATUApp::showAcceptorPortal() {
     switch (choice) {
         case 1: acceptorBrowseSurplus(); break;
         case 2: acceptorClaimDonation(); break;
-        case 3: acceptorVerifyHandoverWithOTP(); break;
+        case 3: acceptorConfirmPickup(); break;
         case 4: acceptorRaiseFoodNeed(); break;
         case 5: acceptorViewMyNeeds(); break;
         case 6: acceptor->displayProfile(); UIHelper::pause(); break;
@@ -458,37 +454,34 @@ void ANNADATUApp::showAcceptorPortal() {
 }
 
 void ANNADATUApp::acceptorBrowseSurplus() {
-    UIHelper::printSectionHeader("HYPERLOCAL SURPLUS FOOD MATCHING");
+    UIHelper::printSectionHeader("SURPLUS FOOD LISTINGS NEARBY");
 
-    std::cout << "Filter Diet Preference:\n 1. Any Diet\n 2. Pure Veg Only\n";
+    std::cout << "Diet Preference:\n 1. Any Food\n 2. Pure Veg Only\n";
     int dChoice = UIHelper::getMenuChoice(1, 2);
     DietType dt = (dChoice == 1) ? DietType::ANY : DietType::VEG;
 
     double maxRadius = UIHelper::readDouble("Search Radius (km, e.g. 20): ", 1.0);
 
-    // Run Strategy Pattern matching
     auto matches = m_matchingEngine.findNearbySurplus(
         m_currentUser->getLocation(), dt, 1, m_listings, maxRadius
     );
 
-    std::cout << "\nStrategy: " << m_matchingEngine.getStrategy()->getStrategyName() << "\n";
-    std::cout << "Found " << matches.size() << " available surplus donations within " << maxRadius << " km:\n";
+    std::cout << "\nFound " << matches.size() << " available surplus donations within " << maxRadius << " km:\n";
     std::cout << "========================================================================================\n";
 
     if (matches.empty()) {
-        std::cout << "No available listings matched your criteria in this radius.\n";
+        std::cout << "No available food listings found in this radius.\n";
     } else {
         int idx = 1;
         for (const auto& m : matches) {
-            std::cout << "[" << idx++ << "] Listing ID: " << m.listing.getId()
-                      << " | Score: " << std::fixed << std::setprecision(1) << m.matchScore << " pts\n"
+            std::cout << "[" << idx++ << "] Listing ID: " << m.listing.getId() << "\n"
                       << "    Food: " << m.listing.getFoodItem().getTitle() << "\n"
                       << "    Donor: " << m.listing.getDonorName() << "\n"
-                      << "    Location: " << m.listing.getPickupLocation().getFullString() << "\n"
+                      << "    Pickup Location: " << m.listing.getPickupLocation().getFullString() << "\n"
                       << "    Quantity: " << m.listing.getFoodItem().getQuantityKg() << " kg (~" 
-                      << m.listing.getFoodItem().getServingsCount() << " servings)\n"
-                      << "    Proximity & Urgency: " << m.highlightNote << "\n"
-                      << "    Freshness Meter: " << m.listing.getFreshnessBadge() << "\n";
+                      << m.listing.getFoodItem().getServingsCount() << " meals)\n"
+                      << "    Distance: " << m.highlightNote << "\n"
+                      << "    Freshness: " << m.listing.getFreshnessBadge() << "\n";
             std::cout << "----------------------------------------------------------------------------------------\n";
         }
     }
@@ -496,7 +489,7 @@ void ANNADATUApp::acceptorBrowseSurplus() {
 }
 
 void ANNADATUApp::acceptorClaimDonation() {
-    UIHelper::printSectionHeader("REQUEST / CLAIM FOOD DONATION");
+    UIHelper::printSectionHeader("CLAIM / REQUEST FOOD DONATION");
 
     std::string listingId = UIHelper::readLine("Enter Listing ID to request (e.g. LST_001): ");
     auto listing = findListingById(listingId);
@@ -514,7 +507,7 @@ void ANNADATUApp::acceptorClaimDonation() {
     }
 
     if (listing->isExpired()) {
-        UIHelper::printError("This food item has expired and cannot be safely distributed.");
+        UIHelper::printError("This food item has expired and cannot be safely consumed.");
         UIHelper::pause();
         return;
     }
@@ -522,83 +515,82 @@ void ANNADATUApp::acceptorClaimDonation() {
     listing->markRequested(m_currentUser->getId(), m_currentUser->getName());
     syncStorage();
 
-    UIHelper::printSuccess("Request submitted successfully!");
-    std::cout << "The Donor (" << listing->getDonorName() << ") has been notified of your request.\n";
-    std::cout << "Pickup Point: " << listing->getPickupLocation().getFullString() << "\n";
-    std::cout << "Once at pickup, ask the donor for their 6-digit OTP to complete verification!\n";
+    UIHelper::printSuccess("Food request submitted!");
+    std::cout << "Donor: " << listing->getDonorName() << "\n";
+    std::cout << "Pickup Address: " << listing->getPickupLocation().getFullString() << "\n";
+    std::cout << "Status updated to: REQUEST PENDING (Awaiting Donor approval)\n";
     UIHelper::pause();
 }
 
-void ANNADATUApp::acceptorVerifyHandoverWithOTP() {
-    UIHelper::printSectionHeader("OTP-VERIFIED HANDOVER (TRUST BY DESIGN)");
+void ANNADATUApp::acceptorConfirmPickup() {
+    UIHelper::printSectionHeader("CONFIRM FOOD COLLECTION / DELIVERY");
 
-    std::string listingId = UIHelper::readLine("Enter Listing ID you are picking up (e.g. LST_001): ");
-    auto listing = findListingById(listingId);
-
-    if (!listing) {
-        UIHelper::printError("Listing not found.");
-        UIHelper::pause();
-        return;
-    }
-
-    if (listing->getAssignedAcceptorId() != m_currentUser->getId()) {
-        UIHelper::printError("You are not the designated recipient for this listing.");
-        UIHelper::pause();
-        return;
-    }
-
-    if (listing->getStatus() == ListingStatus::COMPLETED) {
-        UIHelper::printInfo("This donation has already been verified and closed.");
-        UIHelper::pause();
-        return;
-    }
-
-    std::cout << "\nVerifying Handover for:\n";
-    std::cout << " * Listing: " << listing->getId() << " - " << listing->getFoodItem().getTitle() << "\n";
-    std::cout << " * Quantity: " << listing->getFoodItem().getQuantityKg() << " kg (~"
-              << listing->getFoodItem().getServingsCount() << " meals)\n";
-    std::cout << " * Donor: " << listing->getDonorName() << "\n\n";
-
-    std::string enteredOtp = UIHelper::readLine("Enter the 6-digit OTP provided by the Donor: ");
-
-    if (listing->verifyOtpAndComplete(enteredOtp)) {
-        int mealsRescued = listing->getFoodItem().getServingsCount();
-        double kgRescued = listing->getFoodItem().getQuantityKg();
-
-        // 1. Update Acceptor stats
-        auto acceptor = std::dynamic_pointer_cast<Acceptor>(m_currentUser);
-        if (acceptor) {
-            acceptor->recordMealsReceived(mealsRescued);
+    std::vector<DonationListing*> myClaimedListings;
+    for (auto& l : m_listings) {
+        if (l.getAssignedAcceptorId() == m_currentUser->getId() &&
+            (l.getStatus() == ListingStatus::MATCHED || l.getStatus() == ListingStatus::REQUESTED)) {
+            myClaimedListings.push_back(&l);
         }
-
-        // 2. Award Points and Record Impact for Donor
-        auto donorUser = findUserById(listing->getDonorId());
-        auto donor = std::dynamic_pointer_cast<Donor>(donorUser);
-        int pointsEarned = GamificationEngine::calculatePoints(
-            mealsRescued, kgRescued, listing->getFoodItem().getFoodType(), true
-        );
-
-        if (donor) {
-            donor->recordSuccessfulDonation(mealsRescued, kgRescued, pointsEarned);
-        }
-
-        syncStorage();
-
-        // Thank You & Impact Screen (Slide 4, 5, 6, 7)
-        UIHelper::clearScreen();
-        std::cout << "========================================================================================\n";
-        std::cout << "                  HANDOVER VERIFIED! - EVERY MEAL SAVED IS A MEAL SERVED!               \n";
-        std::cout << "========================================================================================\n";
-        std::cout << " [SUCCESS] OTP Matched! Transaction securely closed in ANNADATU ledger.\n";
-        std::cout << " IMPACT DELIVERED:\n";
-        std::cout << "  - " << mealsRescued << " nutritious meals delivered to people in need\n";
-        std::cout << "  - " << kgRescued << " kg edible surplus diverted from landfills\n";
-        std::cout << "  - " << GamificationEngine::calculateCarbonOffsetKg(kgRescued) << " kg CO2e greenhouse emissions prevented\n";
-        std::cout << "  - Donor (" << listing->getDonorName() << ") earned +" << pointsEarned << " Karma Points on Leaderboard!\n";
-        std::cout << "========================================================================================\n";
-    } else {
-        UIHelper::printError("INCORRECT OTP! Handover verification failed. Please check with donor.");
     }
+
+    if (myClaimedListings.empty()) {
+        std::cout << "No active food collections waiting for handover confirmation.\n";
+        UIHelper::pause();
+        return;
+    }
+
+    std::cout << "Your active claimed donations:\n\n";
+    for (size_t i = 0; i < myClaimedListings.size(); ++i) {
+        std::cout << " [" << (i + 1) << "] " << myClaimedListings[i]->getId() << " - "
+                  << myClaimedListings[i]->getFoodItem().getTitle()
+                  << " (" << myClaimedListings[i]->getFoodItem().getQuantityKg() << " kg, ~"
+                  << myClaimedListings[i]->getFoodItem().getServingsCount() << " meals)\n"
+                  << "     Donor: " << myClaimedListings[i]->getDonorName() << "\n"
+                  << "     Pickup Point: " << myClaimedListings[i]->getPickupLocation().getFullString() << "\n"
+                  << "     Current Status: " << listingStatusToString(myClaimedListings[i]->getStatus()) << "\n\n";
+    }
+
+    std::cout << "Select donation number to confirm collection (or 0 to cancel): ";
+    int choice = UIHelper::getMenuChoice(0, static_cast<int>(myClaimedListings.size()));
+    if (choice == 0) return;
+
+    auto listing = myClaimedListings[choice - 1];
+
+    listing->markCompleted();
+
+    int mealsRescued = listing->getFoodItem().getServingsCount();
+    double kgRescued = listing->getFoodItem().getQuantityKg();
+
+    // 1. Update Acceptor stats
+    auto acceptor = std::dynamic_pointer_cast<Acceptor>(m_currentUser);
+    if (acceptor) {
+        acceptor->recordMealsReceived(mealsRescued);
+    }
+
+    // 2. Award Points and Record Impact for Donor
+    auto donorUser = findUserById(listing->getDonorId());
+    auto donor = std::dynamic_pointer_cast<Donor>(donorUser);
+    int pointsEarned = GamificationEngine::calculatePoints(
+        mealsRescued, kgRescued, listing->getFoodItem().getFoodType(), true
+    );
+
+    if (donor) {
+        donor->recordSuccessfulDonation(mealsRescued, kgRescued, pointsEarned);
+    }
+
+    syncStorage();
+
+    UIHelper::clearScreen();
+    std::cout << "========================================================================================\n";
+    std::cout << "                       FOOD DELIVERED SUCCESSFULLY - ZERO WASTE!                        \n";
+    std::cout << "========================================================================================\n";
+    std::cout << " [SUCCESS] Handover confirmed! Food received and recorded.\n";
+    std::cout << " IMPACT DELIVERED:\n";
+    std::cout << "  - " << mealsRescued << " nutritious meals delivered to people in need\n";
+    std::cout << "  - " << kgRescued << " kg edible food diverted from landfills\n";
+    std::cout << "  - " << GamificationEngine::calculateCarbonOffsetKg(kgRescued) << " kg CO2e greenhouse emissions prevented\n";
+    std::cout << "  - Donor (" << listing->getDonorName() << ") earned +" << pointsEarned << " Karma Points!\n";
+    std::cout << "========================================================================================\n";
     UIHelper::pause();
 }
 

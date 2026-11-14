@@ -63,7 +63,7 @@ public:
     // Workflow actions
     void markRequested(const std::string& acceptorId, const std::string& acceptorName);
     void confirmAcceptance();
-    bool verifyOtpAndComplete(const std::string& enteredOtp);
+    void markCompleted();
     void cancelListing();
 
     // Urgency calculation for matching algorithm

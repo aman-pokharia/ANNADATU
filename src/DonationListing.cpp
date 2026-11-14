@@ -69,16 +69,9 @@ void DonationListing::confirmAcceptance() {
     m_status = ListingStatus::MATCHED;
 }
 
-bool DonationListing::verifyOtpAndComplete(const std::string& enteredOtp) {
-    if (m_status != ListingStatus::MATCHED && m_status != ListingStatus::REQUESTED) {
-        throw ListingException("Listing is not in matched state for handover.");
-    }
-    if (m_otp == enteredOtp) {
-        m_status = ListingStatus::COMPLETED;
-        m_completedAt = formatTimestamp(getCurrentTime());
-        return true;
-    }
-    return false;
+void DonationListing::markCompleted() {
+    m_status = ListingStatus::COMPLETED;
+    m_completedAt = formatTimestamp(getCurrentTime());
 }
 
 void DonationListing::cancelListing() {

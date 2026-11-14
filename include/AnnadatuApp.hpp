@@ -43,9 +43,10 @@ public:
     void run();
 
     // Authentication workflows
-    void handleLogin();
+    void handleDonorLogin();
+    void handleAcceptorLogin();
     void handleRegister(Role role);
-    void handleQuickDemoLogin();
+    void handleEmailLogin(Role role);
 
     // Portal menus
     void showDonorPortal();
@@ -56,12 +57,11 @@ public:
     void donorPostFood();
     void donorViewMyListings();
     void donorReviewRequests();
-    void donorShowHandoverOTP();
 
     // Acceptor actions
     void acceptorBrowseSurplus();
     void acceptorClaimDonation();
-    void acceptorVerifyHandoverWithOTP();
+    void acceptorConfirmPickup();
     void acceptorRaiseFoodNeed();
     void acceptorViewMyNeeds();
 

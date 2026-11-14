@@ -1,2 +1,0 @@
-REQ_001|USR_A201|Robin Hood Army Delhi|45|0|3|Robin Hood Army Base, Hanuman Mandir~Connaught Place~New Delhi~28.6289~77.2144~|Evening food drive for migrant workers under Minto Bridge|0|2026-11-14 18:00|
-REQ_002|USR_A202|Aasra Night Shelter for Homeless|70|3|4|Aasra Community Night Shelter~Old Delhi Rly Station~New Delhi~28.66~77.228~|Dinner serving for 70 elderly & shelter residents|0|2026-11-14 18:45|
