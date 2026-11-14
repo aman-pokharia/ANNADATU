@@ -1,120 +1,171 @@
-# Annadatu – Surplus Food Donation Platform
+# 🍲 ANNADATU: Surplus Food Redistribution System
+> **"Ann + Setu – The Bridge Against Hunger."**  
+> *"Every meal saved is a meal served!"*
 
-Annadatu is a C++17 console application that connects people and businesses with surplus food to NGOs, shelters, and community kitchens that can distribute it to people in need.
+---
 
-The platform helps donors list available food and helps acceptors discover suitable nearby donations before the food expires.
+## 👥 Authors
+- **Aman Pokharia**
+- **Roshan Choudhary**
+- **Khushi Gupta**
 
-## Features
+---
 
-- **Donor and acceptor accounts:** Separate user roles and workflows.
-- **Food donation listings:** Record food details, quantity, servings, dietary type, preparation type, and safe-consumption window.
-- **Food requests:** Acceptors can request suitable donations and raise food requirements.
-- **Manually entered addresses:** Donors and acceptors can enter their addresses, which are displayed to help coordinate food pickup and delivery.
-- **Urgency-based matching:** Prioritizes food based on its remaining safe-consumption time and portion fit.
-- **Donation confirmation:** Supports request, confirmation, and handover workflows.
-- **Environmental impact metrics:** Tracks estimated CO₂e emissions averted and virtual water saved based on the amount of food rescued.
-- **Data persistence:** Saves users, donations, and requests in text files so data can be retained between runs.
+## 📖 Project Overview
+In India, millions of people face hunger daily while tonnes of edible, wholesome food is thrown away from restaurants, banquets, university messes, and homes. 
 
-## Technology
+**ANNADATU** is a terminal-based C++ application designed to connect food **Donors** (restaurants, hostels, caterers) with **Acceptors** (NGOs, shelters, community kitchens) so that edible surplus food can be collected and served before it spoils.
 
-- **Language:** C++
-- **Standard:** C++17
-- **Storage:** File-based text serialization
-- **Build/run scripts:** Windows batch files (`build.bat` and `run.bat`)
+---
 
-## Project Structure
+## 🎓 Learning Outcome
+> **"Learned to apply core Object-Oriented Programming (OOP) concepts in C++—including Classes, Inheritance, Polymorphism, Encapsulation, and File Handling—to build a real-world surplus food management system."**
+
+---
+
+## 🏛️ OOPS Concepts Implemented
+
+This project demonstrates the core syllabus concepts of Object-Oriented Programming:
+
+### 1. Classes and Objects
+- **`User`**: Base class representing common user profile information.
+- **`Donor`**: Represents entities providing surplus food (restaurants, mess halls, homes).
+- **`Acceptor`**: Represents entities receiving food (NGOs, orphanages, shelters).
+- **`FoodItem`**: Stores food title, type (cooked/raw), diet (veg/non-veg), and quantity.
+- **`DonationListing`**: Represents an active food donation with pickup location and expiry window.
+- **`Location`**: Stores address and geographical coordinates.
+
+### 2. Inheritance
+A clean inheritance hierarchy models users in the system:
+```text
+                  +-------------------+
+                  |    User (Base)    |
+                  +-------------------+
+                            ^
+                            |
+             +--------------+--------------+
+             |                             |
+    +-----------------+           +-------------------+
+    |  Donor (Child)  |           |  Acceptor (Child) |
+    +-----------------+           +-------------------+
+```
+
+### 3. Polymorphism & Virtual Functions
+- The base class `User` defines virtual functions:
+  ```cpp
+  virtual void displayProfile() const = 0;
+  virtual void showDashboard() const = 0;
+  virtual std::string getRoleSpecificType() const = 0;
+  ```
+- Both `Donor` and `Acceptor` override these functions to provide role-specific screens.
+
+### 4. Encapsulation & Data Hiding
+- All class member variables are kept `private` or `protected`.
+- Access and modification are handled through getter and setter methods with input validation.
+
+### 5. File Handling & Data Persistence
+- Data is stored in text files inside the `data/` folder:
+  - `data/users.txt`: Stores registered users.
+  - `data/donations.txt`: Stores active and completed food listings.
+  - `data/requests.txt`: Stores NGO demand requests.
+- When the application starts, it automatically loads saved data from disk.
+
+---
+
+## 🔄 How the System Works
+
+### 1. Easy One-Click Login
+- No complicated passwords or tokens needed for testing.
+- The main menu allows you to choose an existing **Donor** (e.g. *Haldirams*, *Bikanervala*, *IIT Mess*) or **Acceptor** (e.g. *Robin Hood Army*, *Aasra Shelter*) with just one number.
+
+### 2. Donor Actions:
+- **Post Food**: Add excess food details (name, cooked/raw, veg/non-veg, weight in kg, servings, safe consumption hours).
+- **View My Listings**: Check current status of published food.
+- **Approve Requests**: View and accept pickup requests from nearby NGOs.
+- **Profile & Badges**: View total meals saved and earned karma badges.
+
+### 3. Acceptor (NGO) Actions:
+- **Browse Nearby Surplus Food**: See available donations ranked by distance and freshness.
+- **Claim Food Donation**: Send a request to collect a donation listing.
+- **Confirm Collection**: Mark food as received with 1 step once collected.
+- **Post Food Need**: Register a food demand for shelter beneficiaries.
+
+### 4. Leaderboard & Impact:
+- Calculates **meals served**, **kg of food diverted from landfills**, and **CO₂ emissions saved**.
+- Ranks donors on a community leaderboard based on meals donated.
+
+---
+
+## 📁 Project Structure
 
 ```text
 oops project/
-├── build.bat
-├── run.bat
-├── annadatu.exe
-├── data/
+│
+├── build.bat               # Simple 1-click compile script
+├── run.bat                 # 1-click launch script
+├── README.md               # Project documentation
+├── annadatu.exe            # Executable file
+│
+├── data/                   # Saved data text files
 │   ├── users.txt
 │   ├── donations.txt
 │   └── requests.txt
-├── include/
-│   ├── Common.hpp
-│   ├── Location.hpp
-│   ├── FoodItem.hpp
+│
+├── include/                # Header files (.hpp) - Declarations
 │   ├── User.hpp
 │   ├── Donor.hpp
 │   ├── Acceptor.hpp
+│   ├── FoodItem.hpp
 │   ├── DonationListing.hpp
 │   ├── FoodRequest.hpp
+│   ├── Location.hpp
 │   ├── MatchingEngine.hpp
+│   ├── GamificationEngine.hpp
 │   ├── StorageManager.hpp
 │   ├── UIHelper.hpp
 │   └── AnnadatuApp.hpp
-└── src/
-    ├── Location.cpp
-    ├── FoodItem.cpp
+│
+└── src/                    # Source files (.cpp) - Implementations
     ├── User.cpp
     ├── Donor.cpp
     ├── Acceptor.cpp
+    ├── FoodItem.cpp
     ├── DonationListing.cpp
     ├── FoodRequest.cpp
+    ├── Location.cpp
     ├── MatchingEngine.cpp
+    ├── GamificationEngine.cpp
     ├── StorageManager.cpp
     ├── UIHelper.cpp
     ├── AnnadatuApp.cpp
     └── main.cpp
 ```
 
-## How to Run
+---
 
-These instructions are for Windows.
+## 🚀 How to Run
 
-### Run the application
-
-Open PowerShell or Command Prompt in the project directory and run:
-
+### In Windows PowerShell:
 ```powershell
 .\run.bat
 ```
+*(or run the binary directly: `.\annadatu.exe`)*
 
-Alternatively, run the executable directly:
-
-```powershell
-.\annadatu.exe
+### In Windows Command Prompt (CMD):
+```cmd
+run.bat
 ```
 
-### Build the application
-
-To compile the source code, run:
-
+### To Recompile (if you make any changes):
 ```powershell
 .\build.bat
 ```
 
-## Application Workflow
+---
 
-### Donor
-
-1. Sign in and choose a donor category.
-2. Add a food donation with its details and safe-consumption window.
-3. Review requests from nearby acceptors.
-4. Confirm the handover.
-
-### Acceptor
-
-1. Sign in and choose an acceptor category.
-2. Browse nearby donations and filter by dietary preference.
-3. Send a request for a suitable donation.
-4. Pick up the food and confirm receipt.
-5. Submit a food request when additional supplies are needed.
-
-## Matching Logic
-
-Annadatu prioritizes listings according to the time remaining in their safe-consumption window. The matching score also considers portion fit. Addresses are entered manually and displayed to help users coordinate the handover; the application does not calculate distance or use GPS-based matching.
-
-## Object-Oriented Design
-
-The project uses C++ object-oriented programming concepts, including:
-
-- **Encapsulation:** Class data is protected and validated through class methods.
-- **Inheritance:** `Donor` and `Acceptor` derive from the base `User` class.
-- **Polymorphism:** The abstract `User` interface supports role-specific behavior.
-- **Operator overloading:** Used for formatted output, comparisons, and quantity accumulation.
-- **Strategy pattern:** Matching strategies can be selected through the matching engine.
-- **Storage management:** `StorageManager` handles saving and loading application data.
+## 🧪 Quick Test (Try it in 1 minute!)
+1. Run `.\run.bat`.
+2. Select **`2`** (Login as Acceptor) $\to$ Select **`1`** (*Robin Hood Army Delhi*).
+3. Select **`2`** (Claim / Request Food Donation) $\to$ Enter `LST_001`.
+4. Select **`3`** (Confirm Food Collection) $\to$ Select `1`.
+5. 🎉 Watch the food get successfully delivered, diverted from landfills, and added to the donor's leaderboard score!
